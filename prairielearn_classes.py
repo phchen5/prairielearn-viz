@@ -114,6 +114,7 @@ class Assessment:
         self.name = name
         self.label = label
         self.course_id = course_id
+        self.submissions_fetched = False  # Tracks whether submissions have been fetched
 
         self.scores = []
 
@@ -126,11 +127,17 @@ class Assessment:
         if response.status_code == 200:
             submissions = response.json()
             self.scores = [submission.get("score_perc", 0) for submission in submissions if submission.get("score_perc") is not None]
+            self.submissions_fetched = True  # Mark that submissions have been fetched
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
     def get_summary_statistics(self):
         """Compute summary statistics for the assessment."""
+
+        if self.submissions_fetched == False:
+            print("Please fetch submissions for this assessment first!")
+            return
+
         if not self.scores:
             return {
                 "num_submissions": 0,
