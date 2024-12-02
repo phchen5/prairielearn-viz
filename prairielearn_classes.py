@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import statistics
 
 class Course:
-    def __init__(self, course_code, course_id, token):
+    def __init__(self, course_code, course_id):
         """
         Initialize a Course instance.
 
@@ -13,14 +13,13 @@ class Course:
         """
         self.course_code = course_code
         self.course_id = course_id
-        self.token = token
         self.students = []
         self.assessments = []
 
-    def fetch_students(self, global_students):
+    def fetch_students(self, global_students, token):
         """Fetch all students in the course and populate the `students` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/gradebook"
-        headers = {"Private-Token": self.token}
+        headers = {"Private-Token": token}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -47,10 +46,10 @@ class Course:
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
-    def fetch_assessments(self, global_assessments):
+    def fetch_assessments(self, global_assessments, token):
         """Fetch all assessments in the course and populate the `assessments` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments"
-        headers = {"Private-Token": self.token}
+        headers = {"Private-Token": token}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -79,7 +78,7 @@ class Course:
         for student in self.students:
             print(f"User ID: {student.user_id}, User Name: {student.user_name}, User UID: {student.user_uid}")
 
-    def get_assessment_summary_statistics(self):
+    def get_assessment_summary_statistics(self, token):
         """Compute and print summary statistics for each assessment in the course."""
         if not self.assessments:
             print("No assessments available. Please fetch assessments first.")
@@ -88,21 +87,17 @@ class Course:
         print("\nAssessment Summary Statistics:")
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions(self.token)
+            assessment.fetch_submissions(self.course_id, token)
 
-            # Get statistics using Assessment class methods
-            min_score = assessment.get_min_score()
-            max_score = assessment.get_max_score()
-            average_score = assessment.get_average_score()
-            median_score = assessment.get_median_score()
-            num_submissions = assessment.get_number_of_submissions()
+            # Get summary statistics using the Assessment class method
+            stats = assessment.get_summary_statistics()
 
             print(f"\nAssessment: {assessment.name} (Label: {assessment.label})")
-            print(f"  - Number of submissions: {num_submissions}")
-            print(f"  - Mean score: {average_score:.2f}%" if average_score is not None else "  - Mean score: N/A")
-            print(f"  - Median score: {median_score:.2f}%" if median_score is not None else "  - Median score: N/A")
-            print(f"  - Max score: {max_score:.2f}%" if max_score is not None else "  - Max score: N/A")
-            print(f"  - Min score: {min_score:.2f}%" if min_score is not None else "  - Min score: N/A")
+            print(f"  - Number of submissions: {stats['num_submissions']}")
+            print(f"  - Mean score: {stats['mean_score']:.2f}%" if stats['mean_score'] is not None else "  - Mean score: N/A")
+            print(f"  - Median score: {stats['median_score']:.2f}%" if stats['median_score'] is not None else "  - Median score: N/A")
+            print(f"  - Max score: {stats['max_score']:.2f}%" if stats['max_score'] is not None else "  - Max score: N/A")
+            print(f"  - Min score: {stats['min_score']:.2f}%" if stats['min_score'] is not None else "  - Min score: N/A")
 
 
 class Assessment:
@@ -134,25 +129,24 @@ class Assessment:
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
-    def get_min_score(self):
-        """Return the minimum score."""
-        return min(self.scores) if self.scores else None
+    def get_summary_statistics(self):
+        """Compute summary statistics for the assessment."""
+        if not self.scores:
+            return {
+                "num_submissions": 0,
+                "mean_score": None,
+                "median_score": None,
+                "max_score": None,
+                "min_score": None
+            }
 
-    def get_max_score(self):
-        """Return the maximum score."""
-        return max(self.scores) if self.scores else None
-
-    def get_average_score(self):
-        """Return the average score."""
-        return sum(self.scores) / len(self.scores) if self.scores else None
-
-    def get_median_score(self):
-        """Return the median score."""
-        return statistics.median(self.scores) if self.scores else None
-
-    def get_number_of_submissions(self):
-        """Return the number of submissions."""
-        return len(self.scores)
+        return {
+            "num_submissions": len(self.scores),
+            "mean_score": sum(self.scores) / len(self.scores),
+            "median_score": statistics.median(self.scores),
+            "max_score": max(self.scores),
+            "min_score": min(self.scores)
+        }
 
     def plot_score_histogram(self):
         """Plot a histogram of the score percentages."""
