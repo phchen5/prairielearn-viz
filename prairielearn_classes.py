@@ -1,7 +1,6 @@
 import requests
 import matplotlib.pyplot as plt
 
-
 class Course:
     def __init__(self, course_id, token):
         """
@@ -16,7 +15,7 @@ class Course:
         self.students = []
         self.assessments = []
 
-    def fetch_students(self):
+    def fetch_students(self, global_students):
         """Fetch all students in the course and populate the `students` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/gradebook"
         headers = {"Private-Token": self.token}
@@ -24,10 +23,24 @@ class Course:
 
         if response.status_code == 200:
             gradebook_data = response.json()
-            self.students = [
-                Student(student["user_id"], student["user_name"], student["user_uid"], student["assessments"])
-                for student in gradebook_data
-            ]
+
+            for student in gradebook_data:
+
+                student_id = student["user_id"]
+                name = student["user_name"]
+                email = student["user_uid"]
+
+                if student_id not in global_students:
+                    student_instance = Student(student_id, name, email)
+                    student_instance.add_course(self)
+                    global_students[student_id] = student_instance
+                else:
+                    student_instance = global_students[student_id]
+                    student_instance.add_course(self)
+                    self.students.append(student_instance)
+
+                self.students.append(student_instance)
+
             # Print the number of students fetched
             print(f"Fetched {len(self.students)} students.")
         else:
@@ -119,7 +132,7 @@ class Assessment:
 
 
 class Student:
-    def __init__(self, student_id, name, email, grades):
+    def __init__(self, user_id, user_name, user_uid):
         """
         Initialize a Student instance.
 
@@ -129,10 +142,26 @@ class Student:
             email (str): Email of the student.
             grades (list): List of dictionaries containing assessment grades.
         """
-        self.student_id = student_id
-        self.name = name
-        self.email = email
-        self.grades = grades
+        self.user_id = user_id
+        self.user_name = user_name
+        self.user_uid = user_uid
+
+        self.courses = []
+
+    def add_course(self, course):
+        """Add a course to the student's list of courses."""
+        if course not in self.courses:
+            self.courses.append(course)
+
+    def list_courses(self):
+        """Print the student's name and the courses they are enrolled in."""
+        print(f"Student: {self.user_name}")
+        if self.courses:
+            print("Enrolled in the following courses:")
+            for course in self.courses:
+                print(f"- Course ID: {course.course_id}")
+        else:
+            print("Not enrolled in any courses.")
 
     def get_performance(self):
         """Visualize the student's performance across assessments."""
