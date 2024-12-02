@@ -47,7 +47,7 @@ class Course:
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
-    def fetch_assessments(self):
+    def fetch_assessments(self, global_assessments):
         """Fetch all assessments in the course and populate the `assessments` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments"
         headers = {"Private-Token": self.token}
@@ -55,10 +55,15 @@ class Course:
 
         if response.status_code == 200:
             assessments_data = response.json()
-            self.assessments = [
-                Assessment(assessment["assessment_id"], assessment["assessment_name"], assessment["assessment_label"])
-                for assessment in assessments_data
-            ]
+
+            for assessment in assessments_data:
+
+                assessment_id = assessment["assessment_id"]
+                assessment_name = assessment["assessment_name"]
+                assessment_label = assessment["assessment_label"]
+
+                global_assessments[assessment_id] = Assessment(assessment_id, assessment_name, assessment_label, self.course_id)
+                self.assessments.append(global_assessments[assessment_id])
 
             # Print each assessment name on a new line
             print("Fetched assessments:")
@@ -83,7 +88,7 @@ class Course:
         print("\nAssessment Summary Statistics:")
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions(self.course_id, self.token)
+            assessment.fetch_submissions(self.token)
 
             # Get statistics using Assessment class methods
             min_score = assessment.get_min_score()
@@ -101,7 +106,7 @@ class Course:
 
 
 class Assessment:
-    def __init__(self, assessment_id, name, label):
+    def __init__(self, assessment_id, name, label, course_id):
         """
         Initialize an Assessment instance.
 
@@ -113,11 +118,13 @@ class Assessment:
         self.assessment_id = assessment_id
         self.name = name
         self.label = label
+        self.course_id = course_id
+
         self.scores = []
 
-    def fetch_submissions(self, course_id, token):
+    def fetch_submissions(self, token):
         """Fetch all submissions for this assessment."""
-        url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{course_id}/assessments/{self.assessment_id}/assessment_instances"
+        url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments/{self.assessment_id}/assessment_instances"
         headers = {"Private-Token": token}
         response = requests.get(url, headers=headers)
 
