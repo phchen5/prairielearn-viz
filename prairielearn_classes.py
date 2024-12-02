@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import statistics
 
 class Course:
-    def __init__(self, course_id, token):
+    def __init__(self, course_code, course_id, token):
         """
         Initialize a Course instance.
 
@@ -11,6 +11,7 @@ class Course:
             course_id (str): ID of the course instance.
             token (str): Personal access token for PrairieLearn API.
         """
+        self.course_code = course_code
         self.course_id = course_id
         self.token = token
         self.students = []
@@ -38,12 +39,11 @@ class Course:
                 else:
                     student_instance = global_students[student_id]
                     student_instance.add_course(self)
-                    self.students.append(student_instance)
 
                 self.students.append(student_instance)
 
             # Print the number of students fetched
-            print(f"Fetched {len(self.students)} students.")
+            print(f"Fetched {len(self.students)} students for course code {self.course_code}.")
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
@@ -66,6 +66,13 @@ class Course:
                 print(f"- {assessment.name} (Label: {assessment.label})")
         else:
             raise ValueError(f"Failed to fetch assessments. Status Code: {response.status_code}")
+
+    def show_student_list(self):
+        """Show the list of students enrolled in the course."""
+        print(f"\nThere are {len(self.students)} students in Course {self.course_code}:")
+
+        for student in self.students:
+            print(f"User ID: {student.user_id}, User Name: {student.user_name}, User UID: {student.user_uid}")
 
     def get_assessment_summary_statistics(self):
         """Compute and print summary statistics for each assessment in the course."""
