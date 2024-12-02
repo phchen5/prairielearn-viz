@@ -140,6 +140,21 @@ class Assessment:
         """Return the number of submissions."""
         return len(self.scores)
 
+    def plot_score_histogram(self):
+        """Plot a histogram of the score percentages."""
+        if not self.scores:
+            print(f"No scores available for assessment {self.name}. Fetch submissions first.")
+            return
+
+        plt.figure(figsize=(8, 6))
+        plt.hist(self.scores, bins=10, color="skyblue", edgecolor="black", alpha=0.7)
+        plt.title(f"Score Distribution for {self.name} (Label: {self.label})", fontsize=14)
+        plt.xlabel("Score Percentage", fontsize=12)
+        plt.ylabel("Frequency", fontsize=12)
+        plt.grid(axis="y", linestyle="--", alpha=0.7)
+        plt.tight_layout()
+        plt.show()
+
 
 
 class Student:
