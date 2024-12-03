@@ -188,6 +188,7 @@ class Student:
         self.user_uid = user_uid
 
         self.courses = []
+        self.grades = []
 
     def add_course(self, course):
         """Add a course to the student's list of courses."""
@@ -204,22 +205,41 @@ class Student:
         else:
             print("Not enrolled in any courses.")
 
-    def get_performance(self):
-        """Visualize the student's performance across assessments."""
-        assessment_names = [grade["assessment_name"] for grade in self.grades]
-        scores = [
-            grade["score_perc"] if grade["score_perc"] is not None else 0
-            for grade in self.grades
-        ]
+    def fetch_all_grades(self, token):
+        """
+        Fetch all grades for the student across their courses.
 
-        # Visualize the data
-        plt.figure(figsize=(10, 6))
-        plt.bar(assessment_names, scores, color="skyblue", edgecolor="black")
-        plt.title(f"Performance of {self.name} Across Assessments", fontsize=14)
-        plt.xlabel("Assessment Name", fontsize=12)
-        plt.ylabel("Score Percentage (%)", fontsize=12)
-        plt.xticks(rotation=45, ha="right")
-        plt.ylim(0, 100)
-        plt.grid(axis="y", linestyle="--", alpha=0.7)
-        plt.tight_layout()
-        plt.show()
+        Returns:
+            dict: A dictionary where the keys are assessment IDs and the values are the `score_perc` for this student.
+        """
+        grades = []
+
+        for course in self.courses:
+            # Fetch the gradebook for the course
+            url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{course.course_id}/gradebook"
+            headers = {"Private-Token": token}
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 200:
+                gradebook_data = response.json()
+
+                # Find the current student in the gradebook
+                student_data = next((student for student in gradebook_data if student["user_id"] == self.user_id), None)
+
+                if student_data:
+                    # Extract grades for this student's assessments
+                    for assessment in student_data["assessments"]:
+                        grades.append({
+                            "course_code": course.course_code,  # Add course_code if available
+                            "course_id": course.course_id,
+                            "assessment_id": assessment["assessment_id"],
+                            "assessment_name": assessment["assessment_name"],
+                            "assessment_label": assessment["assessment_label"],
+                            "score_perc": assessment["score_perc"]
+                        })
+
+            else:
+                print(f"Failed to fetch gradebook for course {course.course_id}. Status Code: {response.status_code}")
+
+        self.grades = grades
+        return grades
