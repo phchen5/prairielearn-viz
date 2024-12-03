@@ -237,11 +237,15 @@ class Student:
             print(f"No grades available for {self.user_name}. Fetch grades first.")
             return
 
+        # Normalize course_code to a list for consistent handling
+        if isinstance(course_code, str):
+            course_code = [course_code]
+
         # Filter grades by course_code if provided
         grades_to_plot = [
-            grade for grade in self.grades if course_code is None or grade["course_code"] == course_code
+            grade for grade in self.grades if course_code is None or grade["course_code"] in course_code
         ]
-        print(grades_to_plot)
+
         if not grades_to_plot:
             print(f"No grades found for course {course_code}.")
             return
@@ -249,9 +253,6 @@ class Student:
         # Extract data for plotting
         assessments = [f"{grade['course_code']:} {grade['assessment_name']} ({grade['assessment_label']})" for grade in grades_to_plot]
         scores = [grade["score_perc"] if grade["score_perc"] is not None else 0 for grade in grades_to_plot]
-
-        print(assessments)
-        print(scores)
 
         # Plot the grades
         plt.figure(figsize=(10, 6))
