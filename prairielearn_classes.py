@@ -228,7 +228,7 @@ class Student:
         self.grades = grades
         return grades
 
-    def plot_grades(self, course_code=None):
+    def plot_grades(self, course_code=None, assessment_label=None):
         """
         Plot the grades of the student using Altair. Optionally filter by one or more course_codes.
 
@@ -242,10 +242,15 @@ class Student:
         # Normalize course_code to a list for consistent handling
         if isinstance(course_code, str):
             course_code = [course_code]
+        if isinstance(assessment_label, str):
+            assessment_label = [assessment_label]
 
-        # Filter grades by course_code if provided
+        # Filter grades by course_code and assessment_label if provided
         grades_to_plot = [
-            grade for grade in self.grades if course_code is None or grade["course_code"] in course_code
+            grade
+            for grade in self.grades
+            if (course_code is None or grade["course_code"] in course_code) and
+            (assessment_label is None or grade["assessment_label"] in assessment_label)
         ]
 
         if not grades_to_plot:
@@ -276,13 +281,13 @@ class Student:
             alt.Chart(df)
             .mark_bar()
             .encode(
-                x=alt.X("true_assessment_name:N", title="Assessments", sort=None),
-                y=alt.Y("score_perc:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
+                y=alt.Y("true_assessment_name:N", title="Assessments", sort=None),
+                x=alt.X("score_perc:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
                 color=alt.Color("course_code:N", title="Course Code"),
                 tooltip=["course_code", "assessment_name", "assessment_label", "score_perc"],
             )
             .properties(
-                width=800,
+                width=600,
                 height=400,
             )
         )
@@ -290,10 +295,10 @@ class Student:
         # Add text annotations for the scores
         annotations = (
             alt.Chart(df)
-            .mark_text(dy=-10, fontSize=10, fontWeight="bold", color="black")
+            .mark_text(dx=15, fontSize=10, fontWeight="bold", color="black")
             .encode(
-                x=alt.X("true_assessment_name:N", sort=None),
-                y=alt.Y("score_perc:Q"),
+                y=alt.Y("true_assessment_name:N", sort=None),
+                x=alt.X("score_perc:Q"),
                 text=alt.Text("score_perc:Q", format=".1f"),
             )
         )
