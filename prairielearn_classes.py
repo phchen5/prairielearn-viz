@@ -1,6 +1,8 @@
 import requests
 import matplotlib.pyplot as plt
 import statistics
+import altair as alt
+import pandas as pd
 
 class Course:
     def __init__(self, course_code, course_id):
@@ -228,10 +230,10 @@ class Student:
 
     def plot_grades(self, course_code=None):
         """
-        Plot the grades of the student. Optionally filter by course_code.
+        Plot the grades of the student using Altair. Optionally filter by one or more course_codes.
 
         Args:
-            course_code (str, optional): If provided, only plot grades for this course code.
+            course_code (str or list of str, optional): If provided, only plot grades for the specified course code(s).
         """
         if not self.grades:
             print(f"No grades available for {self.user_name}. Fetch grades first.")
@@ -247,20 +249,59 @@ class Student:
         ]
 
         if not grades_to_plot:
-            print(f"No grades found for course {course_code}.")
+            if course_code:
+                print(f"No grades found for course(s) {', '.join(course_code)}.")
+            else:
+                print("No grades found.")
             return
 
-        # Extract data for plotting
-        assessments = [f"{grade['course_code']:} {grade['assessment_name']} ({grade['assessment_label']})" for grade in grades_to_plot]
-        scores = [grade["score_perc"] if grade["score_perc"] is not None else 0 for grade in grades_to_plot]
+        # Create a DataFrame from the grades
+        df = pd.DataFrame(grades_to_plot)
 
-        # Plot the grades
-        plt.figure(figsize=(10, 6))
-        plt.bar(assessments, scores, color="skyblue", edgecolor="black")
-        plt.title(f"Grades for {self.user_name}" + (f" in {course_code}" if course_code else ""), fontsize=14)
-        plt.xlabel("Assessments", fontsize=12)
-        plt.ylabel("Score Percentage", fontsize=12)
-        plt.xticks(rotation=45, ha="right")
-        plt.ylim(0, 100)  # Assuming scores are percentages
-        plt.tight_layout()
-        plt.show()
+        # Replace None scores with 0 for visualization
+        df["score_perc"] = df["score_perc"].fillna(0)
+
+        # Create a new variable for the x-axis to uniquely identify assessments
+        df["true_assessment_name"] = (
+            df["course_code"]
+            + " - "
+            + df["assessment_name"]
+            + " ("
+            + df["assessment_label"]
+            + ")"
+        )
+
+        # Create the Altair bar chart
+        bars = (
+            alt.Chart(df)
+            .mark_bar()
+            .encode(
+                x=alt.X("true_assessment_name:N", title="Assessments", sort=None),
+                y=alt.Y("score_perc:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
+                color=alt.Color("course_code:N", title="Course Code"),
+                tooltip=["course_code", "assessment_name", "assessment_label", "score_perc"],
+            )
+            .properties(
+                width=800,
+                height=400,
+            )
+        )
+
+        # Add text annotations for the scores
+        annotations = (
+            alt.Chart(df)
+            .mark_text(dy=-10, fontSize=10, fontWeight="bold", color="black")
+            .encode(
+                x=alt.X("true_assessment_name:N", sort=None),
+                y=alt.Y("score_perc:Q"),
+                text=alt.Text("score_perc:Q", format=".1f"),
+            )
+        )
+
+        # Combine bars and annotations
+        chart = (bars + annotations).properties(
+            title=f"Grades for {self.user_name}" + (f" in {', '.join(course_code)}" if course_code else "")
+        )
+
+        # Display the chart
+        chart.display()
