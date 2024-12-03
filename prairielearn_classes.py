@@ -6,10 +6,6 @@ class Course:
     def __init__(self, course_code, course_id):
         """
         Initialize a Course instance.
-
-        Args:
-            course_id (str): ID of the course instance.
-            token (str): Personal access token for PrairieLearn API.
         """
         self.course_code = course_code
         self.course_id = course_id
@@ -104,11 +100,6 @@ class Assessment:
     def __init__(self, assessment_id, name, label, course_id):
         """
         Initialize an Assessment instance.
-
-        Args:
-            assessment_id (str): ID of the assessment.
-            name (str): Name of the assessment.
-            label (str): Label of the assessment.
         """
         self.assessment_id = assessment_id
         self.name = name
@@ -176,12 +167,6 @@ class Student:
     def __init__(self, user_id, user_name, user_uid):
         """
         Initialize a Student instance.
-
-        Args:
-            student_id (str): ID of the student.
-            name (str): Name of the student.
-            email (str): Email of the student.
-            grades (list): List of dictionaries containing assessment grades.
         """
         self.user_id = user_id
         self.user_name = user_name
@@ -208,9 +193,6 @@ class Student:
     def fetch_all_grades(self, token):
         """
         Fetch all grades for the student across their courses.
-
-        Returns:
-            dict: A dictionary where the keys are assessment IDs and the values are the `score_perc` for this student.
         """
         grades = []
 
