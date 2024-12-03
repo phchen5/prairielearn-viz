@@ -225,3 +225,41 @@ class Student:
 
         self.grades = grades
         return grades
+
+    def plot_grades(self, course_code=None):
+        """
+        Plot the grades of the student. Optionally filter by course_code.
+
+        Args:
+            course_code (str, optional): If provided, only plot grades for this course code.
+        """
+        if not self.grades:
+            print(f"No grades available for {self.user_name}. Fetch grades first.")
+            return
+
+        # Filter grades by course_code if provided
+        grades_to_plot = [
+            grade for grade in self.grades if course_code is None or grade["course_code"] == course_code
+        ]
+        print(grades_to_plot)
+        if not grades_to_plot:
+            print(f"No grades found for course {course_code}.")
+            return
+
+        # Extract data for plotting
+        assessments = [f"{grade['course_code']:} {grade['assessment_name']} ({grade['assessment_label']})" for grade in grades_to_plot]
+        scores = [grade["score_perc"] if grade["score_perc"] is not None else 0 for grade in grades_to_plot]
+
+        print(assessments)
+        print(scores)
+
+        # Plot the grades
+        plt.figure(figsize=(10, 6))
+        plt.bar(assessments, scores, color="skyblue", edgecolor="black")
+        plt.title(f"Grades for {self.user_name}" + (f" in {course_code}" if course_code else ""), fontsize=14)
+        plt.xlabel("Assessments", fontsize=12)
+        plt.ylabel("Score Percentage", fontsize=12)
+        plt.xticks(rotation=45, ha="right")
+        plt.ylim(0, 100)  # Assuming scores are percentages
+        plt.tight_layout()
+        plt.show()
