@@ -149,19 +149,35 @@ class Assessment:
         }
 
     def plot_score_histogram(self):
-        """Plot a histogram of the score percentages."""
+        """Plot a histogram of the score percentages using Altair."""
         if not self.scores:
             print(f"No scores available for assessment {self.name}. Fetch submissions first.")
             return
 
-        plt.figure(figsize=(8, 6))
-        plt.hist(self.scores, bins=10, color="skyblue", edgecolor="black", alpha=0.7)
-        plt.title(f"Score Distribution for {self.name} (Label: {self.label})", fontsize=14)
-        plt.xlabel("Score Percentage", fontsize=12)
-        plt.ylabel("Frequency", fontsize=12)
-        plt.grid(axis="y", linestyle="--", alpha=0.7)
-        plt.tight_layout()
-        plt.show()
+        # Create a DataFrame from the scores
+        df = pd.DataFrame({"scores": self.scores})
+
+        # Create the Altair histogram
+        histogram = (
+            alt.Chart(df)
+            .mark_bar()
+            .encode(
+                x=alt.X("scores:Q", bin=alt.Bin(maxbins=10), title="Score Percentage"),
+                y=alt.Y("count():Q", title="Frequency"),
+                tooltip=[
+                    alt.Tooltip("scores:Q", title="Score Range"),
+                    alt.Tooltip("count():Q", title="Frequency")
+                ]
+            )
+            .properties(
+                title=f"Score Distribution for {self.name} (Label: {self.label})",
+                width=600,
+                height=400
+            )
+        )
+
+        # Display the histogram
+        histogram.display()
 
 
 
@@ -254,8 +270,13 @@ class Student:
         ]
 
         if not grades_to_plot:
-            if course_code:
-                print(f"No grades found for course(s) {', '.join(course_code)}.")
+            if course_code or assessment_label:
+                filters = []
+                if course_code:
+                    filters.append(f"course(s): {', '.join(course_code)}")
+                if assessment_label:
+                    filters.append(f"assessment label(s): {', '.join(assessment_label)}")
+                print(f"No grades found for {', '.join(filters)}.")
             else:
                 print("No grades found.")
             return
@@ -281,8 +302,8 @@ class Student:
             alt.Chart(df)
             .mark_bar()
             .encode(
-                y=alt.Y("true_assessment_name:N", title="Assessments", sort=None),
                 x=alt.X("score_perc:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
+                y=alt.Y("true_assessment_name:N", title="Assessments", sort=None),
                 color=alt.Color("course_code:N", title="Course Code"),
                 tooltip=["course_code", "assessment_name", "assessment_label", "score_perc"],
             )
