@@ -179,39 +179,27 @@ class Assessment:
         self.name = name
         self.label = label
         self.course_id = course_id
-        self.submissions_fetched = False  # Tracks whether submissions have been fetched
         self.token = token
 
         self.scores = []
 
-    def fetch_submissions(self, token):
+    def fetch_submissions(self):
         """Fetch all submissions for this assessment."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments/{self.assessment_id}/assessment_instances"
-        headers = {"Private-Token": token}
+        headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
             submissions = response.json()
             self.scores = [submission.get("score_perc", 0) for submission in submissions if submission.get("score_perc") is not None]
-            self.submissions_fetched = True  # Mark that submissions have been fetched
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
     def get_summary_statistics(self):
         """Compute summary statistics for the assessment."""
 
-        if self.submissions_fetched == False:
-            print("Please fetch submissions for this assessment first!")
-            return
-
         if not self.scores:
-            return {
-                "num_submissions": 0,
-                "mean_score": None,
-                "median_score": None,
-                "max_score": None,
-                "min_score": None
-            }
+            self.fetch_submissions()
 
         return {
             "num_submissions": len(self.scores),
@@ -224,8 +212,7 @@ class Assessment:
     def plot_score_histogram(self):
         """Plot a histogram of the score percentages using Altair."""
         if not self.scores:
-            print(f"No scores available for assessment {self.name}. Fetch submissions first.")
-            return
+            self.fetch_submissions()
 
         # Create a DataFrame from the scores
         df = pd.DataFrame({"scores": self.scores})
@@ -282,7 +269,7 @@ class Student:
         else:
             print("Not enrolled in any courses.")
 
-    def fetch_all_grades(self, token):
+    def fetch_all_grades(self):
         """
         Fetch all grades for the student across their courses.
         """
@@ -291,7 +278,7 @@ class Student:
         for course in self.courses:
             # Fetch the gradebook for the course
             url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{course.course_id}/gradebook"
-            headers = {"Private-Token": token}
+            headers = {"Private-Token": self.token}
             response = requests.get(url, headers=headers)
 
             if response.status_code == 200:
@@ -326,8 +313,7 @@ class Student:
             course_code (str or list of str, optional): If provided, only plot grades for the specified course code(s).
         """
         if not self.grades:
-            print(f"No grades available for {self.user_name}. Fetch grades first.")
-            return
+            self.fetch_all_grades()
 
         # Normalize course_code to a list for consistent handling
         if isinstance(course_code, str):
