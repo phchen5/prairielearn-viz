@@ -5,7 +5,7 @@ import altair as alt
 import pandas as pd
 
 class Course:
-    def __init__(self, course_code, course_id):
+    def __init__(self, course_code, course_id, token):
         """
         Initialize a Course instance.
         """
@@ -14,10 +14,12 @@ class Course:
         self.students = []
         self.assessments = []
 
-    def fetch_students(self, global_students, token):
+        self.token = token
+
+    def fetch_students(self, global_students):
         """Fetch all students in the course and populate the `students` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/gradebook"
-        headers = {"Private-Token": token}
+        headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -40,14 +42,14 @@ class Course:
                 self.students.append(student_instance)
 
             # Print the number of students fetched
-            print(f"Fetched {len(self.students)} students for course code {self.course_code}.")
+            print(f"\nFetched {len(self.students)} students for course code {self.course_code}.")
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
-    def fetch_assessments(self, global_assessments, token):
+    def fetch_assessments(self, global_assessments):
         """Fetch all assessments in the course and populate the `assessments` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments"
-        headers = {"Private-Token": token}
+        headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -76,7 +78,7 @@ class Course:
         for student in self.students:
             print(f"User ID: {student.user_id}, User Name: {student.user_name}, User UID: {student.user_uid}")
 
-    def get_assessment_summary_statistics(self, token):
+    def get_assessment_summary_statistics(self):
         """Compute and print summary statistics for each assessment in the course."""
         if not self.assessments:
             print("No assessments available. Please fetch assessments first.")
@@ -85,7 +87,7 @@ class Course:
         print("\nAssessment Summary Statistics:")
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions(self.course_id, token)
+            assessment.fetch_submissions(self.token)
 
             # Get summary statistics using the Assessment class method
             stats = assessment.get_summary_statistics()
@@ -96,6 +98,58 @@ class Course:
             print(f"  - Median score: {stats['median_score']:.2f}%" if stats['median_score'] is not None else "  - Median score: N/A")
             print(f"  - Max score: {stats['max_score']:.2f}%" if stats['max_score'] is not None else "  - Max score: N/A")
             print(f"  - Min score: {stats['min_score']:.2f}%" if stats['min_score'] is not None else "  - Min score: N/A")
+
+    def get_assessment_distribution(self):
+        """
+        Plot boxplots for score distributions of all assessments in the course.
+
+        Args:
+            token (str): Access token for fetching submissions.
+        """
+        if not self.assessments:
+            print("No assessments available. Please fetch assessments first.")
+            return
+
+        # Collect data for all assessments
+        data = []
+        for assessment in self.assessments:
+            # Fetch submissions for the assessment
+            assessment.fetch_submissions(self.token)
+
+            # Append the scores with assessment metadata
+            data.extend([
+                {"assessment_name": f"{assessment.name} ({assessment.label})", "score": score}
+                for score in assessment.scores
+            ])
+
+        # Check if there's data to plot
+        if not data:
+            print("No data available to plot.")
+            return
+
+        # Convert to a DataFrame
+        df = pd.DataFrame(data)
+
+        # Create the Altair boxplot
+        boxplot = (
+            alt.Chart(df)
+            .mark_boxplot()
+            .encode(
+                y=alt.Y("assessment_name:N", title="Assessments", sort=None),
+                x=alt.X("score:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
+                color=alt.Color("assessment_name:N", legend=None),  # Color optional for differentiation
+                tooltip=["assessment_name", "score"],
+            )
+            .properties(
+                title="Score Distribution Across Assessments",
+                width=600,
+                height=400,
+            )
+        )
+
+        # Display the chart
+        boxplot.display()
+            
 
 
 class Assessment:
