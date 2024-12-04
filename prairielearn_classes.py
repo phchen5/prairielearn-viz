@@ -106,7 +106,7 @@ class Course:
         print("\nAssessment Summary Statistics:")
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions(self.token)
+            assessment.fetch_submissions()
 
             # Get summary statistics using the Assessment class method
             stats = assessment.get_summary_statistics()
@@ -132,7 +132,7 @@ class Course:
         data = []
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions(self.token)
+            assessment.fetch_submissions()
 
             # Append the scores with assessment metadata
             data.extend([
