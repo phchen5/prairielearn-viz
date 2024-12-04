@@ -16,7 +16,7 @@ class Course:
 
         self.token = token
 
-    def fetch_students(self, global_students):
+    def fetch_students(self, global_students=None):
         """Fetch all students in the course and populate the `students` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/gradebook"
         headers = {"Private-Token": self.token}
@@ -31,14 +31,18 @@ class Course:
                 name = student["user_name"]
                 email = student["user_uid"]
 
-                if student_id not in global_students:
-                    student_instance = Student(student_id, name, email)
-                    student_instance.add_course(self)
-                    global_students[student_id] = student_instance
+                # Create or retrieve the student instance
+                if global_students is not None:
+                    if student_id not in global_students:
+                        student_instance = Student(student_id, name, email)
+                        global_students[student_id] = student_instance
+                    else:
+                        student_instance = global_students[student_id]
                 else:
-                    student_instance = global_students[student_id]
-                    student_instance.add_course(self)
+                    student_instance = Student(student_id, name, email)
 
+                # Add course to the student and append to the course's student list
+                student_instance.add_course(self)
                 self.students.append(student_instance)
 
             # Print the number of students fetched
@@ -73,6 +77,10 @@ class Course:
 
     def show_student_list(self):
         """Show the list of students enrolled in the course."""
+
+        if not self.students:
+            self.fetch_students()
+            
         print(f"\nThere are {len(self.students)} students in Course {self.course_code}:")
 
         for student in self.students:
