@@ -34,7 +34,7 @@ class Course:
                 # Create or retrieve the student instance
                 if global_students is not None:
                     if student_id not in global_students:
-                        student_instance = Student(student_id, name, email)
+                        student_instance = Student(student_id, name, email, self.token)
                         global_students[student_id] = student_instance
                     else:
                         student_instance = global_students[student_id]
@@ -69,7 +69,7 @@ class Course:
                 if global_assessments is not None:
                     if assessment_id not in global_assessments:
                         global_assessments[assessment_id] = Assessment(
-                            assessment_id, assessment_name, assessment_label, self.course_id
+                            assessment_id, assessment_name, assessment_label, self.course_id, self.token
                         )
                     assessment_instance = global_assessments[assessment_id]
                 else:
@@ -171,7 +171,7 @@ class Course:
 
 
 class Assessment:
-    def __init__(self, assessment_id, name, label, course_id):
+    def __init__(self, assessment_id, name, label, course_id, token):
         """
         Initialize an Assessment instance.
         """
@@ -180,6 +180,7 @@ class Assessment:
         self.label = label
         self.course_id = course_id
         self.submissions_fetched = False  # Tracks whether submissions have been fetched
+        self.token = token
 
         self.scores = []
 
@@ -254,13 +255,14 @@ class Assessment:
 
 
 class Student:
-    def __init__(self, user_id, user_name, user_uid):
+    def __init__(self, user_id, user_name, user_uid, token):
         """
         Initialize a Student instance.
         """
         self.user_id = user_id
         self.user_name = user_name
         self.user_uid = user_uid
+        self.token = token
 
         self.courses = []
         self.grades = []
