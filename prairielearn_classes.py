@@ -50,7 +50,7 @@ class Course:
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
-    def fetch_assessments(self, global_assessments):
+    def fetch_assessments(self, global_assessments=None):
         """Fetch all assessments in the course and populate the `assessments` list."""
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments"
         headers = {"Private-Token": self.token}
@@ -65,8 +65,20 @@ class Course:
                 assessment_name = assessment["assessment_name"]
                 assessment_label = assessment["assessment_label"]
 
-                global_assessments[assessment_id] = Assessment(assessment_id, assessment_name, assessment_label, self.course_id)
-                self.assessments.append(global_assessments[assessment_id])
+                # Create or retrieve the assessment instance
+                if global_assessments is not None:
+                    if assessment_id not in global_assessments:
+                        global_assessments[assessment_id] = Assessment(
+                            assessment_id, assessment_name, assessment_label, self.course_id
+                        )
+                    assessment_instance = global_assessments[assessment_id]
+                else:
+                    assessment_instance = Assessment(
+                        assessment_id, assessment_name, assessment_label, self.course_id
+                    )
+
+                # Append to the course's assessments list
+                self.assessments.append(assessment_instance)
 
             # Print each assessment name on a new line
             print("Fetched assessments:")
