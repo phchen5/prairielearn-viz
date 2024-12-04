@@ -101,8 +101,7 @@ class Course:
     def get_assessment_summary_statistics(self):
         """Compute and print summary statistics for each assessment in the course."""
         if not self.assessments:
-            print("No assessments available. Please fetch assessments first.")
-            return
+            self.fetch_assessments()
 
         print("\nAssessment Summary Statistics:")
         for assessment in self.assessments:
@@ -127,8 +126,7 @@ class Course:
             token (str): Access token for fetching submissions.
         """
         if not self.assessments:
-            print("No assessments available. Please fetch assessments first.")
-            return
+            self.fetch_assessments()
 
         # Collect data for all assessments
         data = []
