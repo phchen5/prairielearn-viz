@@ -36,6 +36,12 @@ def find_students(global_students, user_names=None, cwls=None):
     if (user_names and cwls) or (not user_names and not cwls):
         raise ValueError("You must provide either user_names or cwls, but not both.")
 
+    # Normalize inputs to lists if they are not already
+    if user_names and isinstance(user_names, str):
+        user_names = [user_names]
+    if cwls and isinstance(cwls, str):
+        cwls = [cwls]
+
     # Initialize the results dictionary
     results = {}
 
