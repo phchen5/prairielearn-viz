@@ -17,12 +17,12 @@ pandas = ">=2.2.3"
 [tool.poetry.dev-dependencies]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-pytest-cov = "^6.0.0"
-jupyter = "^1.1.1"
-myst-nb = {version = "^1.1.2", python = "^3.9"}
-sphinx-autoapi = "^3.4.0"
-sphinx-rtd-theme = "^3.0.2"
+pytest = ">=8.3.4"
+pytest-cov = ">=6.0.0"
+jupyter = ">=1.1.1"
+myst-nb = {version = ">=1.1.2", python = ">=3.10"}
+sphinx-autoapi = ">=3.4.0"
+sphinx-rtd-theme = ">=3.0.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
