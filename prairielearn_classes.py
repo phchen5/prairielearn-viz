@@ -118,7 +118,8 @@ class Course:
             print(f"  - Max score: {stats['max_score']:.2f}%" if stats['max_score'] is not None else "  - Max score: N/A")
             print(f"  - Min score: {stats['min_score']:.2f}%" if stats['min_score'] is not None else "  - Min score: N/A")
 
-    def get_assessment_distribution(self):
+
+    def plot_boxplot(self, assessment_label=None):
         """
         Plot boxplots for score distributions of all assessments in the course.
 
@@ -132,13 +133,16 @@ class Course:
         data = []
         for assessment in self.assessments:
             # Fetch submissions for the assessment
-            assessment.fetch_submissions()
 
-            # Append the scores with assessment metadata
-            data.extend([
-                {"assessment_name": f"{assessment.name} ({assessment.label})", "score": score}
-                for score in assessment.scores
-            ])
+            if assessment_label and assessment.label in assessment_label:
+
+                assessment.fetch_submissions()
+
+                # Append the scores with assessment metadata
+                data.extend([
+                    {"assessment_name": f"{assessment.name} ({assessment.label})", "score": score}
+                    for score in assessment.scores
+                ])
 
         # Check if there's data to plot
         if not data:
@@ -149,25 +153,77 @@ class Course:
         df = pd.DataFrame(data)
 
         # Create the Altair boxplot
-        boxplot = (
+        chart = (
             alt.Chart(df)
             .mark_boxplot()
             .encode(
                 y=alt.Y("assessment_name:N", title="Assessments", sort=None),
                 x=alt.X("score:Q", title="Score Percentage", scale=alt.Scale(domain=[0, 100])),
-                color=alt.Color("assessment_name:N", legend=None),  # Color optional for differentiation
+                color=alt.Color("assessment_name:N", legend=None),  # Optional for differentiation
                 tooltip=["assessment_name", "score"],
             )
             .properties(
-                title="Score Distribution Across Assessments",
+                title=f"Score Distribution Across Assessments in {self.course_code}",
                 width=600,
                 height=400,
             )
         )
 
         # Display the chart
-        boxplot.display()
+        chart.display()
             
+
+    def plot_histogram(self, assessment_label=None, bins=20):
+        """
+        Plot boxplots for score distributions of all assessments in the course.
+
+        Args:
+            token (str): Access token for fetching submissions.
+        """
+        if not self.assessments:
+            self.fetch_assessments()
+
+        # Collect data for all assessments
+        data = []
+        for assessment in self.assessments:
+            # Fetch submissions for the assessment
+
+            if assessment_label and assessment.label in assessment_label:
+
+                assessment.fetch_submissions()
+
+                # Append the scores with assessment metadata
+                data.extend([
+                    {"assessment_name": f"{assessment.name} ({assessment.label})", "score": score}
+                    for score in assessment.scores
+                ])
+
+        # Check if there's data to plot
+        if not data:
+            print("No data available to plot.")
+            return
+
+        # Convert to a DataFrame
+        df = pd.DataFrame(data)
+
+        # Create the Altair layered histogram
+        chart = (
+            alt.Chart(df)
+            .mark_bar(opacity=0.3, binSpacing=0)
+            .encode(
+                x=alt.X("score:Q", bin=alt.Bin(maxbins=bins), title="Score Percentage"),
+                y=alt.Y("count():Q", title="Count").stack(None),
+                color=alt.Color("assessment_name:N", title="Assessments"),
+            )
+            .properties(
+                title=f"Layered Histogram of Scores in {self.course_code}",
+                width=600,
+                height=400,
+            )
+        )
+
+        # Display the chart
+        chart.display()
 
 
 class Assessment:
