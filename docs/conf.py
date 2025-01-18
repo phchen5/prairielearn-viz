@@ -16,7 +16,7 @@ author = u"Ben Chen"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-# autoapi_dirs = ["../src"]
+autoapi_dirs = ["../src"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -35,3 +35,5 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # html_theme_options = {
 #     'logo_only': True
 # }
+
+master_doc = 'index'
