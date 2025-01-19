@@ -1,1 +1,2 @@
-placeholder
+```{include} ../CONDUCT.md
+```

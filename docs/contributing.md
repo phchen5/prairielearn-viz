@@ -1,1 +1,2 @@
-placeholder
+```{include} ../CONTRIBUTING.md
+```
