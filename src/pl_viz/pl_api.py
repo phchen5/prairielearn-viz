@@ -38,7 +38,7 @@ class Course:
                     else:
                         student_instance = global_students[student_id]
                 else:
-                    student_instance = Student(student_id, name, email)
+                    student_instance = Student(student_id, name, email, self.token)
 
                 # Add course to the student and append to the course's student list
                 student_instance.add_course(self)
