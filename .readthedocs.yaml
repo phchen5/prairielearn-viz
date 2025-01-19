@@ -22,6 +22,7 @@ build:
       # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
       - poetry install --with dev
       - pip install myst-nb sphinx-autoapi sphinx-rtd-theme jupyter
+      - pip install .  # Install the `pl_viz` package
       
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
