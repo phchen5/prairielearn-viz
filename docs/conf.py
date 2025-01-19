@@ -15,8 +15,13 @@ author = u"Ben Chen"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-
-autoapi_dirs = ["../src"]
+extensions = [
+    "myst_nb",
+    "autoapi.extension",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode"
+]
+autoapi_dirs = ["../src"]  # location to parse for API reference
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -36,4 +41,4 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 #     'logo_only': True
 # }
 
-master_doc = 'index'
+html_theme = "sphinx_rtd_theme"
