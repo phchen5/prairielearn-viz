@@ -1,6 +1,8 @@
 import requests
 import altair as alt
 import pandas as pd
+from assessment import Assessment
+from student import Student
 
 class Course:
     def __init__(self, course_code, course_id, token):

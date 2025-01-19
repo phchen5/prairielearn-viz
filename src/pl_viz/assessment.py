@@ -2,6 +2,8 @@ import requests
 import statistics
 import altair as alt
 import pandas as pd
+from course import Course
+from student import Student
 
 
 class Assessment:
