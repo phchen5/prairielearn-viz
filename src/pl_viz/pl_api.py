@@ -281,9 +281,49 @@ class Course:
         chart.display()
 
 class Assessment:
-    def __init__(self, assessment_id, name, label, course_id, token):
+    """A class to represent an assessment in a course.
+
+    Attributes
+    ----------
+    assessment_id : int
+        The unique identifier for the assessment.
+    name : str
+        The name of the assessment (e.g., 'Midterm Exam').
+    label : str
+        A unique label for the assessment (e.g., 'midterm_1').
+    course_id : int
+        The unique identifier for the course this assessment belongs to.
+    token : str
+        Authentication token for accessing course data.
+    scores : list
+        A list of scores (in percentage) for all submissions to the assessment.
+
+    Methods
+    -------
+    fetch_submissions()
+        Fetch all submissions for this assessment and populate the `scores` list.
+    get_summary_statistics()
+        Compute and return summary statistics for the scores.
+    plot_score_histogram()
+        Plot a histogram of the score percentages using Altair.
+    """
+
+    def __init__(self, assessment_id: int, name: str, label: str, course_id: int, token: str):
         """
         Initialize an Assessment instance.
+
+        Parameters
+        ----------
+        assessment_id : int
+            The unique identifier for the assessment.
+        name : str
+            The name of the assessment.
+        label : str
+            A unique label for the assessment.
+        course_id : int
+            The unique identifier for the course this assessment belongs to.
+        token : str
+            Authentication token for accessing course data.
         """
         self.assessment_id = assessment_id
         self.name = name
@@ -293,8 +333,14 @@ class Assessment:
 
         self.scores = []
 
-    def fetch_submissions(self):
-        """Fetch all submissions for this assessment."""
+    def fetch_submissions(self) -> None:
+        """Fetch all submissions for this assessment and populate the `scores` list.
+
+        Raises
+        ------
+        ValueError
+            If the API request fails.
+        """
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments/{self.assessment_id}/assessment_instances"
         headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
@@ -305,21 +351,44 @@ class Assessment:
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
-    def get_summary_statistics(self):
-        """Compute summary statistics for the assessment."""
+    def get_summary_statistics(self) -> Dict[str, float]:
+        """Compute and return summary statistics for the scores.
 
+        Returns
+        -------
+        dict
+            A dictionary containing summary statistics:
+            - num_submissions : int
+                Number of submissions.
+            - mean_score : float
+                Average score percentage.
+            - median_score : float
+                Median score percentage.
+            - max_score : float
+                Maximum score percentage.
+            - min_score : float
+                Minimum score percentage.
+        
+        Raises
+        ------
+        ValueError
+            If there are no scores available.
+        """
         if not self.scores:
             self.fetch_submissions()
+
+        if not self.scores:
+            raise ValueError("No scores available to compute statistics.")
 
         return {
             "num_submissions": len(self.scores),
             "mean_score": sum(self.scores) / len(self.scores),
             "median_score": statistics.median(self.scores),
             "max_score": max(self.scores),
-            "min_score": min(self.scores)
+            "min_score": min(self.scores),
         }
 
-    def plot_score_histogram(self):
+    def plot_score_histogram(self) -> None:
         """Plot a histogram of the score percentages using Altair."""
         if not self.scores:
             self.fetch_submissions()
