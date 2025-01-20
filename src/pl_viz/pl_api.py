@@ -233,24 +233,29 @@ class Course:
         # Convert to a DataFrame
         df = pd.DataFrame(data)
 
-        # Create the Altair layered histogram
-        chart = (
+        # Create the density curve
+        density_chart = (
             alt.Chart(df)
-            .mark_bar(opacity=0.3, binSpacing=0)
+            .transform_density(
+                density="score",
+                groupby=["assessment_name"],
+                as_=["score", "density"]
+            )
+            .mark_area(opacity=0.5)
             .encode(
-                x=alt.X("score:Q", bin=alt.Bin(maxbins=bins), title="Score Percentage"),
-                y=alt.Y("count():Q", title="Count").stack(None),
+                x=alt.X("score:Q", title="Score Percentage"),
+                y=alt.Y("density:Q", title="Density"),
                 color=alt.Color("assessment_name:N", title="Assessments"),
             )
             .properties(
-                title=f"Layered Histogram of Scores in {self.course_code}",
+                title=f"Density Curve of Scores in {self.course_code}",
                 width=600,
                 height=400,
             )
         )
 
         # Display the chart
-        chart.display()
+        density_chart.display()
 
 class Assessment:
     """A class to represent an assessment in a course."""
