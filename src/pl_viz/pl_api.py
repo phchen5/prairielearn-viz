@@ -251,32 +251,7 @@ class Course:
         chart.display()
 
 class Assessment:
-    """A class to represent an assessment in a course.
-
-    Attributes
-    ----------
-    assessment_id : int
-        The unique identifier for the assessment.
-    name : str
-        The name of the assessment (e.g., 'Midterm Exam').
-    label : str
-        A unique label for the assessment (e.g., 'midterm_1').
-    course_id : int
-        The unique identifier for the course this assessment belongs to.
-    token : str
-        Authentication token for accessing course data.
-    scores : list
-        A list of scores (in percentage) for all submissions to the assessment.
-
-    Methods
-    -------
-    fetch_submissions()
-        Fetch all submissions for this assessment and populate the `scores` list.
-    get_summary_statistics()
-        Compute and return summary statistics for the scores.
-    plot_score_histogram()
-        Plot a histogram of the score percentages using Altair.
-    """
+    """A class to represent an assessment in a course."""
 
     def __init__(self, assessment_id: int, name: str, label: str, course_id: int, token: str):
         """
@@ -295,13 +270,12 @@ class Assessment:
         token : str
             Authentication token for accessing course data.
         """
-        self.assessment_id = assessment_id
-        self.name = name
-        self.label = label
-        self.course_id = course_id
-        self.token = token
-
-        self.scores = []
+        self.assessment_id: int = assessment_id
+        self.name: str = name
+        self.label: str = label
+        self.course_id: int = course_id
+        self.token: str = token
+        self.scores: List[float] = []
 
     def fetch_submissions(self) -> None:
         """Fetch all submissions for this assessment and populate the `scores` list.
@@ -390,34 +364,7 @@ class Assessment:
 
 
 class Student:
-    """A class to represent a student.
-
-    Attributes
-    ----------
-    user_id : int
-        The unique identifier for the student.
-    user_name : str
-        The name of the student.
-    user_uid : str
-        The UID (email or unique identifier) of the student.
-    token : str
-        Authentication token for accessing data.
-    courses : list
-        A list of courses the student is enrolled in.
-    grades : list
-        A list of grades across all courses.
-
-    Methods
-    -------
-    add_course(course)
-        Add a course to the student's list of courses.
-    list_courses()
-        Print the student's name and the courses they are enrolled in.
-    fetch_all_grades()
-        Fetch all grades for the student across their courses.
-    plot_grades(course_code=None, assessment_label=None)
-        Plot the grades of the student using Altair, optionally filtered by course or assessment.
-    """
+    """A class to represent a student."""
     
     def __init__(self, user_id: int, user_name: str, user_uid: str, token: str):
         """
@@ -434,13 +381,12 @@ class Student:
         token : str
             Authentication token for accessing data.
         """
-        self.user_id = user_id
-        self.user_name = user_name
-        self.user_uid = user_uid
-        self.token = token
-
-        self.courses = []
-        self.grades = []
+        self.user_id: int = user_id
+        self.user_name: str = user_name
+        self.user_uid: str = user_uid
+        self.token: str = token
+        self.courses: List['Course'] = []
+        self.grades: List[Dict[str, Union[str, int, float]]] = []
 
     def add_course(self, course: 'Course') -> None:
         """Add a course to the student's list of courses.
