@@ -1,12 +1,53 @@
+from typing import List, Optional, Dict
 import requests
 import altair as alt
 import pandas as pd
 import statistics
 
 class Course:
-    def __init__(self, course_code, course_id, token):
+    """A class to represent a course.
+
+    Attributes
+    ----------
+    course_code : str
+        The code of the course (e.g., 'MATH101').
+    course_id : int
+        The unique identifier for the course.
+    students : list
+        A list of students enrolled in the course.
+    assessments : list
+        A list of assessments associated with the course.
+    token : str
+        Authentication token for the course.
+
+    Methods
+    -------
+    fetch_students(global_students=None)
+        Fetches all students in the course and populates the `students` list.
+    fetch_assessments(global_assessments=None)
+        Fetches all assessments in the course and populates the `assessments` list.
+    show_student_list()
+        Displays a list of students enrolled in the course.
+    get_assessment_summary_statistics()
+        Computes and prints summary statistics for each assessment in the course.
+    plot_boxplot(assessment_label=None)
+        Plots boxplots for score distributions of specified assessments.
+    plot_histogram(assessment_label=None, bins=20)
+        Plots a layered histogram for score distributions of specified assessments.
+    """
+
+    def __init__(self, course_code: str, course_id: int, token: str):
         """
         Initialize a Course instance.
+
+        Parameters
+        ----------
+        course_code : str
+            The code of the course (e.g., 'MATH101').
+        course_id : int
+            The unique identifier for the course.
+        token : str
+            Authentication token for the course.
         """
         self.course_code = course_code
         self.course_id = course_id
@@ -15,8 +56,14 @@ class Course:
 
         self.token = token
 
-    def fetch_students(self, global_students=None):
-        """Fetch all students in the course and populate the `students` list."""
+    def fetch_students(self, global_students: Optional[Dict[int, 'Student']] = None) -> None:
+        """Fetch all students in the course and populate the `students` list.
+
+        Parameters
+        ----------
+        global_students : dict, optional
+            A dictionary to map global student instances for reuse.
+        """
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/gradebook"
         headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
@@ -49,8 +96,14 @@ class Course:
         else:
             raise ValueError(f"Failed to fetch students. Status Code: {response.status_code}")
 
-    def fetch_assessments(self, global_assessments=None):
-        """Fetch all assessments in the course and populate the `assessments` list."""
+    def fetch_assessments(self, global_assessments: Optional[Dict[int, 'Assessment']] = None) -> None:
+        """Fetch all assessments in the course and populate the `assessments` list.
+
+        Parameters
+        ----------
+        global_assessments : dict, optional
+            A dictionary to map global assessment instances for reuse.
+        """
         url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessments"
         headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
@@ -86,9 +139,8 @@ class Course:
         else:
             raise ValueError(f"Failed to fetch assessments. Status Code: {response.status_code}")
 
-    def show_student_list(self):
+    def show_student_list(self) -> None:
         """Show the list of students enrolled in the course."""
-
         if not self.students:
             self.fetch_students()
             
@@ -97,7 +149,7 @@ class Course:
         for student in self.students:
             print(f"User ID: {student.user_id}, User Name: {student.user_name}, User UID: {student.user_uid}")
 
-    def get_assessment_summary_statistics(self):
+    def get_assessment_summary_statistics(self) -> None:
         """Compute and print summary statistics for each assessment in the course."""
         if not self.assessments:
             self.fetch_assessments()
@@ -118,12 +170,13 @@ class Course:
             print(f"  - Min score: {stats['min_score']:.2f}%" if stats['min_score'] is not None else "  - Min score: N/A")
 
 
-    def plot_boxplot(self, assessment_label=None):
-        """
-        Plot boxplots for score distributions of all assessments in the course.
+    def plot_boxplot(self, assessment_label: Optional[List[str]] = None) -> None:
+        """Plot boxplots for score distributions of all or specified assessments.
 
-        Args:
-            token (str): Access token for fetching submissions.
+        Parameters
+        ----------
+        assessment_label : list of str, optional
+            List of assessment labels to include in the plot.
         """
         if not self.assessments:
             self.fetch_assessments()
@@ -172,12 +225,15 @@ class Course:
         chart.display()
             
 
-    def plot_histogram(self, assessment_label=None, bins=20):
-        """
-        Plot boxplots for score distributions of all assessments in the course.
+    def plot_histogram(self, assessment_label: Optional[List[str]] = None, bins: int = 20) -> None:
+        """Plot a layered histogram for score distributions of all or specified assessments.
 
-        Args:
-            token (str): Access token for fetching submissions.
+        Parameters
+        ----------
+        assessment_label : list of str, optional
+            List of assessment labels to include in the plot.
+        bins : int, optional
+            Number of bins for the histogram, default is 20.
         """
         if not self.assessments:
             self.fetch_assessments()
