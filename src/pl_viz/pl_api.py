@@ -158,10 +158,8 @@ class Course:
         # Collect data for all assessments
         data = []
         for assessment in self.assessments:
-            # Fetch submissions for the assessment
-
-            if assessment_label and assessment.label in assessment_label:
-
+            if not assessment_label or assessment.label in assessment_label:
+                # Fetch submissions for the assessment
                 assessment.fetch_submissions()
 
                 # Append the scores with assessment metadata
@@ -217,7 +215,7 @@ class Course:
         for assessment in self.assessments:
             # Fetch submissions for the assessment
 
-            if assessment_label and assessment.label in assessment_label:
+            if not assessment_label or assessment.label in assessment_label:
 
                 assessment.fetch_submissions()
 
