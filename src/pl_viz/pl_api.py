@@ -132,6 +132,10 @@ class Course:
             # Get summary statistics using the Assessment class method
             stats = assessment.get_summary_statistics()
 
+            if stats == None:
+                print(f"\nNo submissions for Assessment: {assessment.name} (Label: {assessment.label})")
+                continue
+            
             print(f"\nAssessment: {assessment.name} (Label: {assessment.label})")
             print(f"  - Number of submissions: {stats['num_submissions']}")
             print(f"  - Mean score: {stats['mean_score']:.2f}%" if stats['mean_score'] is not None else "  - Mean score: N/A")
@@ -322,7 +326,7 @@ class Assessment:
             self.fetch_submissions()
 
         if not self.scores:
-            raise ValueError("No scores available to compute statistics.")
+            return None
 
         return {
             "num_submissions": len(self.scores),
