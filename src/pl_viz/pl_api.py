@@ -311,6 +311,7 @@ class Assessment:
         if response.status_code == 200:
             submissions = response.json()
             self.scores = [submission.get("score_perc", 0) for submission in submissions if submission.get("score_perc") is not None]
+            print(f"Successfully fetched submissions for assessment '{self.name}' (ID: {self.assessment_id}).")
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
@@ -461,9 +462,11 @@ class Student:
                             "assessment_label": assessment["assessment_label"],
                             "score_perc": assessment["score_perc"]
                         })
+
             else:
                 raise ValueError(f"Failed to fetch gradebook for course {course.course_id}. Status Code: {response.status_code}")
 
+        print(f"Successfully fetched all grades for student {self.user_name} (ID: {self.user_id})")
         self.grades = grades
         return grades
 
