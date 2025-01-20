@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 import requests
 import altair as alt
 import pandas as pd
@@ -420,9 +420,49 @@ class Assessment:
 
 
 class Student:
-    def __init__(self, user_id, user_name, user_uid, token):
+    """A class to represent a student.
+
+    Attributes
+    ----------
+    user_id : int
+        The unique identifier for the student.
+    user_name : str
+        The name of the student.
+    user_uid : str
+        The UID (email or unique identifier) of the student.
+    token : str
+        Authentication token for accessing data.
+    courses : list
+        A list of courses the student is enrolled in.
+    grades : list
+        A list of grades across all courses.
+
+    Methods
+    -------
+    add_course(course)
+        Add a course to the student's list of courses.
+    list_courses()
+        Print the student's name and the courses they are enrolled in.
+    fetch_all_grades()
+        Fetch all grades for the student across their courses.
+    plot_grades(course_code=None, assessment_label=None)
+        Plot the grades of the student using Altair, optionally filtered by course or assessment.
+    """
+    
+    def __init__(self, user_id: int, user_name: str, user_uid: str, token: str):
         """
         Initialize a Student instance.
+
+        Parameters
+        ----------
+        user_id : int
+            The unique identifier for the student.
+        user_name : str
+            The name of the student.
+        user_uid : str
+            The UID (email or unique identifier) of the student.
+        token : str
+            Authentication token for accessing data.
         """
         self.user_id = user_id
         self.user_name = user_name
@@ -432,12 +472,18 @@ class Student:
         self.courses = []
         self.grades = []
 
-    def add_course(self, course):
-        """Add a course to the student's list of courses."""
+    def add_course(self, course: 'Course') -> None:
+        """Add a course to the student's list of courses.
+
+        Parameters
+        ----------
+        course : Course
+            The course to add to the student's list.
+        """
         if course not in self.courses:
             self.courses.append(course)
 
-    def list_courses(self):
+    def list_courses(self) -> None:
         """Print the student's name and the courses they are enrolled in."""
         print(f"Student: {self.user_name}")
         if self.courses:
@@ -447,95 +493,88 @@ class Student:
         else:
             print("Not enrolled in any courses.")
 
-    def fetch_all_grades(self):
-        """
-        Fetch all grades for the student across their courses.
+    def fetch_all_grades(self) -> List[Dict[str, Union[str, int, float]]]:
+        """Fetch all grades for the student across their courses.
+
+        Returns
+        -------
+        list of dict
+            A list of dictionaries containing grades for each assessment.
+
+        Raises
+        ------
+        ValueError
+            If the gradebook cannot be fetched for any course.
         """
         grades = []
-
         for course in self.courses:
-            # Fetch the gradebook for the course
             url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{course.course_id}/gradebook"
             headers = {"Private-Token": self.token}
             response = requests.get(url, headers=headers)
 
             if response.status_code == 200:
                 gradebook_data = response.json()
-
-                # Find the current student in the gradebook
                 student_data = next((student for student in gradebook_data if student["user_id"] == self.user_id), None)
 
                 if student_data:
-                    # Extract grades for this student's assessments
                     for assessment in student_data["assessments"]:
                         grades.append({
-                            "course_code": course.course_code,  # Add course_code if available
+                            "course_code": course.course_code,
                             "course_id": course.course_id,
                             "assessment_id": assessment["assessment_id"],
                             "assessment_name": assessment["assessment_name"],
                             "assessment_label": assessment["assessment_label"],
                             "score_perc": assessment["score_perc"]
                         })
-
             else:
-                print(f"Failed to fetch gradebook for course {course.course_id}. Status Code: {response.status_code}")
+                raise ValueError(f"Failed to fetch gradebook for course {course.course_id}. Status Code: {response.status_code}")
 
         self.grades = grades
         return grades
 
-    def plot_grades(self, course_code=None, assessment_label=None):
-        """
-        Plot the grades of the student using Altair. Optionally filter by one or more course_codes.
+    def plot_grades(self, course_code: Optional[Union[str, List[str]]] = None, assessment_label: Optional[Union[str, List[str]]] = None) -> None:
+        """Plot the grades of the student using Altair. Optionally filter by course or assessment.
 
-        Args:
-            course_code (str or list of str, optional): If provided, only plot grades for the specified course code(s).
+        Parameters
+        ----------
+        course_code : str or list of str, optional
+            The course code(s) to filter grades by.
+        assessment_label : str or list of str, optional
+            The assessment label(s) to filter grades by.
+
+        Raises
+        ------
+        ValueError
+            If no grades are available for the specified filters.
         """
         if not self.grades:
             self.fetch_all_grades()
 
-        # Normalize course_code to a list for consistent handling
         if isinstance(course_code, str):
             course_code = [course_code]
         if isinstance(assessment_label, str):
             assessment_label = [assessment_label]
 
-        # Filter grades by course_code and assessment_label if provided
         grades_to_plot = [
-            grade
-            for grade in self.grades
+            grade for grade in self.grades
             if (course_code is None or grade["course_code"] in course_code) and
             (assessment_label is None or grade["assessment_label"] in assessment_label)
         ]
 
         if not grades_to_plot:
-            if course_code or assessment_label:
-                filters = []
-                if course_code:
-                    filters.append(f"course(s): {', '.join(course_code)}")
-                if assessment_label:
-                    filters.append(f"assessment label(s): {', '.join(assessment_label)}")
-                print(f"No grades found for {', '.join(filters)}.")
-            else:
-                print("No grades found.")
-            return
+            filters = []
+            if course_code:
+                filters.append(f"course(s): {', '.join(course_code)}")
+            if assessment_label:
+                filters.append(f"assessment label(s): {', '.join(assessment_label)}")
+            raise ValueError(f"No grades found for {', '.join(filters)}.")
 
-        # Create a DataFrame from the grades
         df = pd.DataFrame(grades_to_plot)
-
-        # Replace None scores with 0 for visualization
         df["score_perc"] = df["score_perc"].fillna(0)
-
-        # Create a new variable for the x-axis to uniquely identify assessments
         df["true_assessment_name"] = (
-            df["course_code"]
-            + " - "
-            + df["assessment_name"]
-            + " ("
-            + df["assessment_label"]
-            + ")"
+            df["course_code"] + " - " + df["assessment_name"] + " (" + df["assessment_label"] + ")"
         )
 
-        # Create the Altair bar chart
         bars = (
             alt.Chart(df)
             .mark_bar()
@@ -551,7 +590,6 @@ class Student:
             )
         )
 
-        # Add text annotations for the scores
         annotations = (
             alt.Chart(df)
             .mark_text(dx=15, fontSize=10, fontWeight="bold", color="black")
@@ -562,10 +600,8 @@ class Student:
             )
         )
 
-        # Combine bars and annotations
         chart = (bars + annotations).properties(
             title=f"Grades for {self.user_name}" + (f" in {', '.join(course_code)}" if course_code else "")
         )
 
-        # Display the chart
         chart.display()
