@@ -5,36 +5,7 @@ import pandas as pd
 import statistics
 
 class Course:
-    """A class to represent a course.
-
-    Attributes
-    ----------
-    course_code : str
-        The code of the course (e.g., 'MATH101').
-    course_id : int
-        The unique identifier for the course.
-    students : list
-        A list of students enrolled in the course.
-    assessments : list
-        A list of assessments associated with the course.
-    token : str
-        Authentication token for the course.
-
-    Methods
-    -------
-    fetch_students(global_students=None)
-        Fetches all students in the course and populates the `students` list.
-    fetch_assessments(global_assessments=None)
-        Fetches all assessments in the course and populates the `assessments` list.
-    show_student_list()
-        Displays a list of students enrolled in the course.
-    get_assessment_summary_statistics()
-        Computes and prints summary statistics for each assessment in the course.
-    plot_boxplot(assessment_label=None)
-        Plots boxplots for score distributions of specified assessments.
-    plot_histogram(assessment_label=None, bins=20)
-        Plots a layered histogram for score distributions of specified assessments.
-    """
+    """A class to represent a course."""
 
     def __init__(self, course_code: str, course_id: int, token: str):
         """
