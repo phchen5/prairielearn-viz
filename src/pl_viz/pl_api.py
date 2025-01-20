@@ -144,21 +144,28 @@ class Course:
             print(f"  - Min score: {stats['min_score']:.2f}%" if stats['min_score'] is not None else "  - Min score: N/A")
 
 
-    def plot_boxplot(self, assessment_label: Optional[List[str]] = None) -> None:
+    def plot_boxplot(self, assessment_label: Optional[List[str]] = None, assessment_name: Optional[List[str]] = None) -> None:
         """Plot boxplots for score distributions of all or specified assessments.
 
         Parameters
         ----------
         assessment_label : list of str, optional
             List of assessment labels to include in the plot.
+        assessment_name : list of str, optional
+            List of assessment names to include in the plot.
         """
         if not self.assessments:
             self.fetch_assessments()
 
-        # Collect data for all assessments
+        # Collect data for all or specified assessments
         data = []
         for assessment in self.assessments:
-            if not assessment_label or assessment.label in assessment_label:
+            # Include assessment if it matches either label or name filter
+            if (
+                not assessment_label and not assessment_name  # No filters provided
+                or (assessment_label and assessment.label in assessment_label)  # Label filter matches
+                or (assessment_name and assessment.name in assessment_name)  # Name filter matches
+            ):
                 # Fetch submissions for the assessment
                 assessment.fetch_submissions()
 
@@ -197,13 +204,15 @@ class Course:
         chart.display()
             
 
-    def plot_histogram(self, assessment_label: Optional[List[str]] = None, bins: int = 20) -> None:
+    def plot_histogram(self, assessment_label: Optional[List[str]] = None, assessment_name: Optional[List[str]] = None, bins: int = 20) -> None:
         """Plot a layered histogram for score distributions of all or specified assessments.
 
         Parameters
         ----------
         assessment_label : list of str, optional
             List of assessment labels to include in the plot.
+        assessment_name : list of str, optional
+            List of assessment names to include in the plot.
         bins : int, optional
             Number of bins for the histogram, default is 20.
         """
@@ -213,9 +222,12 @@ class Course:
         # Collect data for all assessments
         data = []
         for assessment in self.assessments:
-            # Fetch submissions for the assessment
-
-            if not assessment_label or assessment.label in assessment_label:
+            # Include assessment if it matches either label or name filter
+            if (
+                not assessment_label and not assessment_name  # No filters provided
+                or (assessment_label and assessment.label in assessment_label)  # Label filter matches
+                or (assessment_name and assessment.name in assessment_name)  # Name filter matches
+            ):
 
                 assessment.fetch_submissions()
 
