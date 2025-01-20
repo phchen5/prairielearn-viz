@@ -256,7 +256,7 @@ class Course:
             .mark_area(opacity=0.5)
             .encode(
                 x=alt.X("score:Q", title="Score Percentage"),
-                y=alt.Y("density:Q", title="Density"),
+                y=alt.Y("density:Q", title="Density", stack=None),
                 color=alt.Color("assessment_name:N", title="Assessments"),
             )
             .properties(
