@@ -20,12 +20,11 @@ class Course:
         token : str
             Authentication token for the course.
         """
-        self.course_code = course_code
-        self.course_id = course_id
-        self.students = []
-        self.assessments = []
-
-        self.token = token
+        self.course_code: str = course_code
+        self.course_id: int = course_id
+        self.students: List['Student'] = []
+        self.assessments: List['Assessment'] = []
+        self.token: str = token
 
     def fetch_students(self, global_students: Optional[Dict[int, 'Student']] = None) -> None:
         """Fetch all students in the course and populate the `students` list.
