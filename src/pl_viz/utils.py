@@ -1,4 +1,4 @@
-from .pl_api import Course
+from .pl_api import Course 
 
 def fetch_data(course_ids, token):
 
