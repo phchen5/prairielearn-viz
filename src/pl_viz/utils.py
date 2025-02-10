@@ -8,7 +8,7 @@ def fetch_data(course_ids, token):
 
     for course_code, course_id in course_ids.items():
 
-        course = Course(course_code, course_id, token)
+        course = Course(course_code, course_id, token) 
         global_courses[course_code] = course
 
         course.fetch_students(global_students)
