@@ -80,23 +80,26 @@ class Course:
 
         if response.status_code == 200:
             assessments_data = response.json()
+            print(assessments_data)
 
             for assessment in assessments_data:
 
                 assessment_id = assessment["assessment_id"]
                 assessment_name = assessment["assessment_name"]
                 assessment_label = assessment["assessment_label"]
+                assessment_set_name = assessment["assessment_set_name"]
+                assessment_set_heading = assessment["assessment_set_heading"]
 
                 # Create or retrieve the assessment instance
                 if global_assessments is not None:
                     if assessment_id not in global_assessments:
                         global_assessments[assessment_id] = Assessment(
-                            assessment_id, assessment_name, assessment_label, self.course_id, self.token
+                            assessment_id, assessment_name, assessment_label, assessment_set_name, assessment_set_heading, self.course_id, self.token
                         )
                     assessment_instance = global_assessments[assessment_id]
                 else:
                     assessment_instance = Assessment(
-                        assessment_id, assessment_name, assessment_label, self.course_id
+                        assessment_id, assessment_name, assessment_label, assessment_set_name, assessment_set_heading, self.course_id, self.token
                     )
 
                 # Append to the course's assessments list
@@ -272,7 +275,7 @@ class Course:
 class Assessment:
     """A class to represent an assessment in a course."""
 
-    def __init__(self, assessment_id: int, name: str, label: str, course_id: int, token: str):
+    def __init__(self, assessment_id: int, name: str, label: str, set_name: str, set_heading: str, course_id: int, token: str):
         """
         Initialize an Assessment instance.
 
@@ -284,6 +287,10 @@ class Assessment:
             The name of the assessment.
         label : str
             A unique label for the assessment.
+        set_name : str
+            The set name for the asssessment.
+        set_heading : str
+            The set heading for the assessment.
         course_id : int
             The unique identifier for the course this assessment belongs to.
         token : str
@@ -292,6 +299,8 @@ class Assessment:
         self.assessment_id: int = assessment_id
         self.name: str = name
         self.label: str = label
+        self.set_name: str = set_name
+        self.set_heading: str = set_heading
         self.course_id: int = course_id
         self.token: str = token
         self.scores: List[float] = []

@@ -1,4 +1,8 @@
-from .pl_api import Course 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from pl_api import Course 
 
 def fetch_data(course_ids, token):
 
