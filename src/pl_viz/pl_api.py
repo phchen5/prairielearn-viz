@@ -462,7 +462,7 @@ class Student:
 
                 if student_data:
                     for assessment in student_data["assessments"]:
-                        print(assessment)
+
                         grades.append({
                             "course_code": course.course_code,
                             "course_id": course.course_id,
