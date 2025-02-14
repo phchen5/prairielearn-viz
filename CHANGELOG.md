@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-02-14)
+
+### Features
+
+- Fetch more submission details
+  ([`0de8f23`](https://github.com/phchen5/prairielearn-viz/commit/0de8f239f96852e3210ca12651195fc72b75bb81))
+
+
 ## v0.2.1 (2025-02-14)
 
 
