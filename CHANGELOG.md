@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-02-14)
+
+### Features
+
+- Fetch more attribute for grades in students
+  ([`1b9e367`](https://github.com/phchen5/prairielearn-viz/commit/1b9e367fed0fdb5a00dcc193e66485aa583fdc11))
+
+- Fetch set name and heading for assessments
+  ([`c66d3c1`](https://github.com/phchen5/prairielearn-viz/commit/c66d3c1662b82f9bdc78c8ef411b7a6409464cc7))
+
+
 ## v0.1.2 (2025-02-10)
 
 ### Bug Fixes
