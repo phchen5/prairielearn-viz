@@ -80,7 +80,6 @@ class Course:
 
         if response.status_code == 200:
             assessments_data = response.json()
-            print(assessments_data)
 
             for assessment in assessments_data:
 
@@ -463,13 +462,18 @@ class Student:
 
                 if student_data:
                     for assessment in student_data["assessments"]:
+                        print(assessment)
                         grades.append({
                             "course_code": course.course_code,
                             "course_id": course.course_id,
+                            "points": assessment["points"],
+                            "max_points": assessment["max_points"],
+                            "score_perc": assessment["score_perc"],
+                            "start_date": assessment["start_date"],
+                            "duration_seconds": assessment["duration_seconds"],
                             "assessment_id": assessment["assessment_id"],
                             "assessment_name": assessment["assessment_name"],
                             "assessment_label": assessment["assessment_label"],
-                            "score_perc": assessment["score_perc"]
                         })
 
             else:
