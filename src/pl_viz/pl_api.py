@@ -302,7 +302,7 @@ class Assessment:
         self.set_heading: str = set_heading
         self.course_id: int = course_id
         self.token: str = token
-        self.scores: List[float] = []
+        self.submissions: List[float] = []
 
     def fetch_submissions(self) -> None:
         """Fetch all submissions for this assessment and populate the `scores` list.
@@ -316,79 +316,104 @@ class Assessment:
         headers = {"Private-Token": self.token}
         response = requests.get(url, headers=headers)
 
+        submissions_list = []
+
         if response.status_code == 200:
             submissions = response.json()
-            self.scores = [submission.get("score_perc", 0) for submission in submissions if submission.get("score_perc") is not None]
+
+            for submission in submissions:
+                submissions_list.append({
+                    'points': submission['points'],
+                    'max_points': submission['max_points'],
+                    'score_perc': submission['score_perc'],
+                    'user_id': submission['user_id'],
+                    'group_id': submission['group_id'],
+                    'group_name': submission['group_name'],
+                    'group_uids': submission['group_uids'],
+                    'user_name': submission['user_name'],
+                    'user_role': submission['user_role'],
+                    'start_date': submission['start_date'],
+                    'modified_at': submission['modified_at'],
+                    'highest_score': submission['highest_score'],
+                    'duration_seconds': submission['duration_seconds'],
+                    'assessment_instance_id': submission['assessment_instance_id'],
+                    'assessment_instance_number': submission['assessment_instance_number'],
+
+                })
+
             print(f"Successfully fetched submissions for assessment '{self.name}' (ID: {self.assessment_id}).")
         else:
             raise ValueError(f"Failed to fetch submissions for assessment {self.name}. Status Code: {response.status_code}")
 
-    def get_summary_statistics(self) -> Dict[str, float]:
-        """Compute and return summary statistics for the scores.
+        self.submissions = submissions_list
+        return submissions_list
 
-        Returns
-        -------
-        dict
-            A dictionary containing summary statistics:
-            - num_submissions : int
-                Number of submissions.
-            - mean_score : float
-                Average score percentage.
-            - median_score : float
-                Median score percentage.
-            - max_score : float
-                Maximum score percentage.
-            - min_score : float
-                Minimum score percentage.
+    # def get_summary_statistics(self) -> Dict[str, float]:
+    #     """Compute and return summary statistics for the scores.
+
+    #     Returns
+    #     -------
+    #     dict
+    #         A dictionary containing summary statistics:
+    #         - num_submissions : int
+    #             Number of submissions.
+    #         - mean_score : float
+    #             Average score percentage.
+    #         - median_score : float
+    #             Median score percentage.
+    #         - max_score : float
+    #             Maximum score percentage.
+    #         - min_score : float
+    #             Minimum score percentage.
         
-        Raises
-        ------
-        ValueError
-            If there are no scores available.
-        """
-        if not self.scores:
-            self.fetch_submissions()
+    #     Raises
+    #     ------
+    #     ValueError
+    #         If there are no scores available.
+    #     """
+    #     if not self.scores:
+    #         self.fetch_submissions()
 
-        if not self.scores:
-            return None
+    #     if not self.scores:
+    #         return None
 
-        return {
-            "num_submissions": len(self.scores),
-            "mean_score": sum(self.scores) / len(self.scores),
-            "median_score": statistics.median(self.scores),
-            "max_score": max(self.scores),
-            "min_score": min(self.scores),
-        }
+    #     return {
+    #         "num_submissions": len(self.scores),
+    #         "mean_score": sum(self.scores) / len(self.scores),
+    #         "median_score": statistics.median(self.scores),
+    #         "max_score": max(self.scores),
+    #         "min_score": min(self.scores),
+    #     }
 
-    def plot_score_histogram(self) -> None:
-        """Plot a histogram of the score percentages using Altair."""
-        if not self.scores:
-            self.fetch_submissions()
+    # def plot_score_histogram(self) -> None:
+    #     """Plot a histogram of the score percentages using Altair."""
+    #     if not self.scores:
+    #         self.fetch_submissions()
 
-        # Create a DataFrame from the scores
-        df = pd.DataFrame({"scores": self.scores})
+    #     # Create a DataFrame from the scores
+    #     df = pd.DataFrame({"scores": self.scores})
 
-        # Create the Altair histogram
-        histogram = (
-            alt.Chart(df)
-            .mark_bar()
-            .encode(
-                x=alt.X("scores:Q", bin=alt.Bin(maxbins=10), title="Score Percentage"),
-                y=alt.Y("count():Q", title="Frequency"),
-                tooltip=[
-                    alt.Tooltip("scores:Q", title="Score Range"),
-                    alt.Tooltip("count():Q", title="Frequency")
-                ]
-            )
-            .properties(
-                title=f"Score Distribution for {self.name} (Label: {self.label})",
-                width=600,
-                height=400
-            )
-        )
+    #     # Create the Altair histogram
+    #     histogram = (
+    #         alt.Chart(df)
+    #         .mark_bar()
+    #         .encode(
+    #             x=alt.X("scores:Q", bin=alt.Bin(maxbins=10), title="Score Percentage"),
+    #             y=alt.Y("count():Q", title="Frequency"),
+    #             tooltip=[
+    #                 alt.Tooltip("scores:Q", title="Score Range"),
+    #                 alt.Tooltip("count():Q", title="Frequency")
+    #             ]
+    #         )
+    #         .properties(
+    #             title=f"Score Distribution for {self.name} (Label: {self.label})",
+    #             width=600,
+    #             height=400
+    #         )
+    #     )
 
-        # Display the histogram
-        histogram.display()
+    #     # Display the histogram
+    #     histogram.display()
 
 
 class Student:
