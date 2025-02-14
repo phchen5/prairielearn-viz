@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.2.1 (2025-02-14)
+
+
 ## v0.2.0 (2025-02-14)
+
+### Bug Fixes
+
+- Remove print assessment print message
+  ([`8c840e2`](https://github.com/phchen5/prairielearn-viz/commit/8c840e2c42f1e426126e84d8e57a8bce2543be5f))
 
 ### Features
 
