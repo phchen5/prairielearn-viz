@@ -542,4 +542,4 @@ class Student:
             title=f"Grades for {self.user_name}" + (f" in {', '.join(course_code)}" if course_code else "")
         )
 
-        chart.display()
+        return chart
