@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pl_viz"
-version = "0.3.0"
+version = "0.4.0"
 description = "Fetch and visualize data from PL."
 authors = ["Ben Chen"]
 license = "MIT"

@@ -1,9 +1,15 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-02-23)
+
+
 ## v0.3.0 (2025-02-14)
 
 ### Features
+
+- Add fetch question function
+  ([`49a3841`](https://github.com/phchen5/prairielearn-viz/commit/49a3841478c747be38c4fca8ce8a604eaa5920c8))
 
 - Fetch more submission details
   ([`0de8f23`](https://github.com/phchen5/prairielearn-viz/commit/0de8f239f96852e3210ca12651195fc72b75bb81))
