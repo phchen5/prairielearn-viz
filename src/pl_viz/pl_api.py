@@ -302,7 +302,8 @@ class Assessment:
         self.set_heading: str = set_heading
         self.course_id: int = course_id
         self.token: str = token
-        self.submissions: List[float] = []
+        self.submissions: List[Dict] = []
+        self.grouped_questions: Dict = {}
 
     def fetch_submissions(self) -> None:
         """Fetch all submissions for this assessment and populate the `scores` list.
@@ -347,6 +348,69 @@ class Assessment:
 
         self.submissions = submissions_list
         return submissions_list
+
+
+    def fetch_submission_questions(self) -> List[Dict]:
+        """
+        Loops through each submission (assessment instance) and fetches the associated
+        instance questions. Returns a flat list of all question features (with the submission metadata added).
+        """
+        # If there are no submissions fetched yet, fetch them first.
+        if not self.submissions:
+            self.fetch_submissions()
+
+        all_question_features = []
+        headers = {"Private-Token": self.token}
+
+        for submission in self.submissions:
+            assessment_instance_id = submission.get("assessment_instance_id")
+            if not assessment_instance_id:
+                print("Submission missing assessment instance ID")
+                continue
+
+            url = f"https://us.prairielearn.com/pl/api/v1/course_instances/{self.course_id}/assessment_instances/{assessment_instance_id}/instance_questions"
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                questions = response.json()
+                # Add submission metadata to each question
+                for question in questions:
+                    question["assessment_instance_id"] = assessment_instance_id
+                    question["user_id"] = submission.get("user_id")
+                    question["user_name"] = submission.get("user_name")
+                all_question_features.extend(questions)
+            else:
+                print(f"Error fetching questions for submission {assessment_instance_id}: {response.status_code}")
+                print(response.text)
+
+        return all_question_features
+
+    def group_submission_questions(self) -> Dict:
+        """
+        Groups questions from all submissions by question_id. Each group contains the question features along with
+        the associated assessment_instance_id, user_id, and user_name.
+
+        Returns
+        -------
+        dict
+            A dictionary where each key is a question_id and the value is a list of question entries.
+        """
+        # Fetch questions if needed
+        all_questions = self.fetch_submission_questions()
+
+        grouped = {}
+        for question in all_questions:
+            qid = question.get("question_id")
+            if not qid:
+                print(f"Question from submission {question.get('assessment_instance_id')} missing question_id, skipping.")
+                continue
+
+            if qid not in grouped:
+                grouped[qid] = []
+            grouped[qid].append(question)
+
+        # Save grouped questions as an attribute for easy access later
+        self.grouped_questions = grouped
+        return grouped
 
     # def get_summary_statistics(self) -> Dict[str, float]:
     #     """Compute and return summary statistics for the scores.
